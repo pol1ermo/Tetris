@@ -633,25 +633,36 @@
         }
 
         function handleKeyPress(e) {
-            if (!gameRunning) return;
+            // Allow Enter or Space to start game when not running
+            if (!gameRunning) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    startGame();
+                    e.preventDefault();
+                }
+                return;
+            }
 
             if (e.key === 'p' || e.key === 'P') {
                 togglePause();
+                e.preventDefault();
                 return;
             }
 
             if (gamePaused) return;
+            if (!currentPiece) return;
 
             switch (e.key) {
                 case 'ArrowLeft':
                     if (!collision(currentPiece.shape, currentPiece.x - 1, currentPiece.y)) {
                         currentPiece.x--;
                     }
+                    e.preventDefault();
                     break;
                 case 'ArrowRight':
                     if (!collision(currentPiece.shape, currentPiece.x + 1, currentPiece.y)) {
                         currentPiece.x++;
                     }
+                    e.preventDefault();
                     break;
                 case 'ArrowDown':
                     if (!collision(currentPiece.shape, currentPiece.x, currentPiece.y + 1)) {
@@ -659,6 +670,7 @@
                     }
                     dropPiece();
                     updateDisplay();
+                    e.preventDefault();
                     break;
                 case 'ArrowUp':
                     const rotated = rotate(currentPiece.shape);
@@ -680,6 +692,7 @@
                             currentPiece.x += 2;
                         }
                     }
+                    e.preventDefault();
                     break;
                 case ' ':
                     // Hard drop
@@ -689,10 +702,9 @@
                     }
                     updateDisplay();
                     dropPiece();
+                    e.preventDefault();
                     break;
             }
-
-            e.preventDefault();
         }
 
         function togglePause() {
@@ -715,7 +727,11 @@
         }
 
         // Start initialization when DOM is ready
-        document.addEventListener('DOMContentLoaded', init);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
