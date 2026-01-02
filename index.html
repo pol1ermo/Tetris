@@ -724,34 +724,37 @@
             const preventDefault = (e) => e.preventDefault();
 
             // Left button - with repeat
-            let leftInterval;
+            let leftInterval = null;
             btnLeft.addEventListener('touchstart', (e) => {
                 preventDefault(e);
+                if (leftInterval) clearInterval(leftInterval);
                 moveLeft();
                 leftInterval = setInterval(moveLeft, 100);
             });
-            btnLeft.addEventListener('touchend', () => clearInterval(leftInterval));
-            btnLeft.addEventListener('touchcancel', () => clearInterval(leftInterval));
+            btnLeft.addEventListener('touchend', () => { clearInterval(leftInterval); leftInterval = null; });
+            btnLeft.addEventListener('touchcancel', () => { clearInterval(leftInterval); leftInterval = null; });
 
             // Right button - with repeat
-            let rightInterval;
+            let rightInterval = null;
             btnRight.addEventListener('touchstart', (e) => {
                 preventDefault(e);
+                if (rightInterval) clearInterval(rightInterval);
                 moveRight();
                 rightInterval = setInterval(moveRight, 100);
             });
-            btnRight.addEventListener('touchend', () => clearInterval(rightInterval));
-            btnRight.addEventListener('touchcancel', () => clearInterval(rightInterval));
+            btnRight.addEventListener('touchend', () => { clearInterval(rightInterval); rightInterval = null; });
+            btnRight.addEventListener('touchcancel', () => { clearInterval(rightInterval); rightInterval = null; });
 
             // Down button - with repeat
-            let downInterval;
+            let downInterval = null;
             btnDown.addEventListener('touchstart', (e) => {
                 preventDefault(e);
+                if (downInterval) clearInterval(downInterval);
                 softDrop();
                 downInterval = setInterval(softDrop, 50);
             });
-            btnDown.addEventListener('touchend', () => clearInterval(downInterval));
-            btnDown.addEventListener('touchcancel', () => clearInterval(downInterval));
+            btnDown.addEventListener('touchend', () => { clearInterval(downInterval); downInterval = null; });
+            btnDown.addEventListener('touchcancel', () => { clearInterval(downInterval); downInterval = null; });
 
             // Rotate button
             btnRotate.addEventListener('touchstart', (e) => {
@@ -841,8 +844,11 @@
 
         function softDrop() {
             if (!gameRunning || gamePaused || !currentPiece) return;
+            // Only award points if piece can actually move down
+            if (!collision(currentPiece.shape, currentPiece.x, currentPiece.y + 1)) {
+                score += 1;
+            }
             dropPiece();
-            score += 1;
             updateDisplay();
             drawBoard();
             drawPiece();
@@ -914,11 +920,11 @@
             nextPiece = createPiece();
             gameRunning = true;
             gamePaused = false;
-            lastTime = 0;
+            lastTime = performance.now();
 
             document.getElementById('start-btn').textContent = 'PAUSE';
             drawNextPiece();
-            requestAnimationFrame(update);
+            gameLoop = requestAnimationFrame(update);
         }
 
         function createPiece() {
@@ -1045,8 +1051,8 @@
 
             if (!nextPiece) return;
 
-            const offsetX = (4 - nextPiece.shape[0].length) / 2;
-            const offsetY = (4 - nextPiece.shape.length) / 2;
+            const offsetX = Math.floor((4 - nextPiece.shape[0].length) / 2);
+            const offsetY = Math.floor((4 - nextPiece.shape.length) / 2);
 
             nextPiece.shape.forEach((row, dy) => {
                 row.forEach((value, dx) => {
@@ -1136,7 +1142,7 @@
             if (linesCleared > 0) {
                 // Scoring system (similar to original Tetris)
                 const points = [0, 100, 300, 500, 800];
-                score += points[linesCleared] * level;
+                score += (points[Math.min(linesCleared, 4)] || 0) * level;
                 lines += linesCleared;
 
                 // Level up every 10 lines
