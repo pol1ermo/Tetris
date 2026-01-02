@@ -658,7 +658,12 @@
             adjustCanvasSize();
             window.addEventListener('resize', adjustCanvasSize);
 
-            document.getElementById('start-btn').addEventListener('click', startGame);
+            const startBtn = document.getElementById('start-btn');
+            startBtn.addEventListener('click', startGame);
+            startBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                startGame();
+            });
             document.addEventListener('keydown', handleKeyPress);
 
             // Touch controls
